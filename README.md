@@ -1,8 +1,10 @@
-# FDA Recall Intelligence Platform
+# FDA Recall Intelligence Platform with AI-Ready Hazard Classification
 
 ## Project Overview
 
-The FDA Recall Intelligence Platform is an end-to-end data engineering and analytics project that extracts food recall data from the FDA openFDA API, cleans and loads the data into PostgreSQL, enriches each recall using a rule-based AI-ready classification engine, and presents insights through a Streamlit dashboard.
+The FDA Recall Intelligence Platform is an end-to-end data engineering and analytics project that extracts food recall data from the FDA openFDA API, cleans and loads the data into PostgreSQL, enriches each recall using a rule-based hazard classification engine, and presents insights through a Streamlit dashboard.
+
+The project is designed with an AI-ready enrichment schema so that the current rule-based classifier can later be enhanced with an LLM, embeddings, or RAG-based recall question answering.
 
 The goal of this project is to transform raw FDA recall records into structured intelligence that can help users understand recall patterns by hazard type, severity, category, state, firm, and time period.
 
@@ -10,17 +12,18 @@ The goal of this project is to transform raw FDA recall records into structured 
 
 ## Why This Project Was Built
 
-Raw recall data is useful, but it is not always easy to analyze directly. Recall reasons are stored as text, and important details such as hazard type, severity, and business category are hidden inside long descriptions.
+Raw recall data is useful, but it is not always easy to analyze directly. Recall reasons are stored as text, and important details such as hazard type, severity, and category are hidden inside long descriptions.
 
 This project solves that problem by building a pipeline that:
 
 - Extracts recall data from the FDA API
-- Cleans and standardizes the raw records
+- Cleans and standardizes raw recall records
 - Loads the data into PostgreSQL
-- Classifies recall reasons into meaningful AI-ready categories
+- Classifies recall reasons into structured hazard categories
 - Stores enrichment results in a separate database table
-- Creates analytics views for reporting
+- Creates reusable SQL analytics views for reporting
 - Displays insights in an interactive Streamlit dashboard
+- Uses an AI-ready schema that can support future LLM-based enrichment
 
 ---
 
@@ -34,6 +37,7 @@ This project solves that problem by building a pipeline that:
 - psycopg2
 - python-dotenv
 - FDA openFDA API
+- Git and GitHub
 
 ---
 
@@ -52,7 +56,7 @@ Cleaned CSV
     ↓
 PostgreSQL staging table
     ↓
-Rule-based AI-ready enrichment
+Rule-based hazard classification
     ↓
 PostgreSQL enrichment table
     ↓
@@ -62,11 +66,12 @@ Streamlit dashboard
 ```
 
 ---
----
 
 ## Dashboard Preview
 
 ![FDA Recall Intelligence Dashboard](assets/dashboard.png)
+
+---
 
 ## Data Pipeline
 
@@ -98,18 +103,18 @@ stg_fda_recalls
 
 This table stores the cleaned FDA recall data and acts as the trusted source table for downstream enrichment.
 
-### 4. AI-Ready Enrichment
+### 4. Rule-Based Hazard Classification
 
-A rule-based classification engine analyzes each recall reason and assigns structured intelligence fields.
+A rule-based classification engine analyzes each recall reason and assigns structured enrichment fields.
 
 The enrichment process assigns:
 
-- AI category
+- Category
 - Hazard type
 - Hazard name
 - Severity
 - Confidence score
-- AI-style summary
+- Summary
 - Model/prompt version metadata
 
 The enrichment output is stored in:
@@ -117,6 +122,8 @@ The enrichment output is stored in:
 ```text
 ai_recall_enrichment
 ```
+
+Although the current implementation uses rule-based logic, the enrichment table is intentionally designed to be AI-ready. It includes fields such as `model_name`, `prompt_version`, `ai_confidence`, and `raw_ai_response`, so the classifier can later be replaced or enhanced with an LLM-based process.
 
 This design separates raw FDA recall data from enriched intelligence, which makes the project easier to audit, extend, and improve later.
 
@@ -152,7 +159,7 @@ Stores cleaned FDA recall records.
 ai_recall_enrichment
 ```
 
-Stores AI-ready enrichment results such as category, hazard type, hazard name, severity, confidence score, summary, model name, and prompt version.
+Stores enrichment results such as category, hazard type, hazard name, severity, confidence score, summary, model name, prompt version, and raw response metadata.
 
 ### SQL Scripts
 
@@ -250,13 +257,13 @@ Medium:   172
 
 828 out of 1,000 recalls were classified as High or Critical risk.
 
-That means 82.8% of recall records in this sample were high-risk or critical based on the enrichment logic.
+That means 82.8% of recall records in this sample were high-risk or critical based on the rule-based enrichment logic.
 
 ---
 
 ## Key Findings
 
-- Pathogen contamination was the largest recall category.
+- Pathogen contamination was the largest recall category in this 1,000-record sample.
 - Undeclared allergens were the second-largest recall category.
 - Listeria and Salmonella were the most common hazards.
 - Milk and peanut were among the most common allergen hazards.
@@ -396,6 +403,8 @@ http://localhost:8501
 ai-fda-recall-platform/
     app/
         streamlit_app.py
+    assets/
+        dashboard.png
     data/
         raw/
         processed/
@@ -422,11 +431,12 @@ ai-fda-recall-platform/
 ## Important Notes
 
 - The project uses a 1,000-record FDA food recall sample.
-- The rule-based classifier is designed to be AI-ready and can later be replaced or enhanced with an LLM.
+- The current classifier is rule-based, not a trained machine learning model or live LLM.
+- The enrichment table is designed to support future AI/LLM-based enrichment.
 - The raw FDA records and enriched intelligence are stored separately.
 - PostgreSQL views are used to keep dashboard logic reusable and easier to maintain.
 - The dashboard is built with Streamlit and reads directly from PostgreSQL analytics views.
-- This project is intended as a practical data engineering and AI-enrichment portfolio project.
+- This project is intended as a practical data engineering and analytics portfolio project with an AI-ready extension path.
 
 ---
 
@@ -459,5 +469,6 @@ PostgreSQL loading: Complete
 Rule-based enrichment: Complete
 Analytics views: Complete
 Streamlit dashboard: Complete
-README documentation: In progress
+GitHub publishing: Complete
+README documentation: Complete
 ```
