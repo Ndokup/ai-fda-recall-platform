@@ -62,6 +62,11 @@ Streamlit dashboard
 ```
 
 ---
+---
+
+## Dashboard Preview
+
+![FDA Recall Intelligence Dashboard](assets/dashboard.png)
 
 ## Data Pipeline
 
