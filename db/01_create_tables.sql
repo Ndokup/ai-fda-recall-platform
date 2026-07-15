@@ -44,6 +44,10 @@ CREATE TABLE IF NOT EXISTS ai_recall_enrichment (
     prompt_version TEXT NOT NULL,
     processed_at_utc TIMESTAMP NOT NULL,
     raw_ai_response JSONB,
+    classification_source TEXT,
+    needs_review BOOLEAN DEFAULT false,
+    review_status TEXT DEFAULT 'approved',
+    llm_suggested_category TEXT,
 
     CONSTRAINT fk_ai_recall_number
         FOREIGN KEY (recall_number)
@@ -88,5 +92,18 @@ CREATE TABLE IF NOT EXISTS ai_recall_enrichment (
         CHECK (
             ai_confidence IS NULL
             OR (ai_confidence >= 0 AND ai_confidence <= 1)
+        ),
+            ,
+
+    CONSTRAINT chk_classification_source
+        CHECK (
+            classification_source IS NULL
+            OR classification_source IN ('rule_based', 'llm', 'manual_review')
+        ),
+
+    CONSTRAINT chk_review_status
+        CHECK (
+            review_status IS NULL
+            OR review_status IN ('approved', 'pending', 'rejected')
         )
 );

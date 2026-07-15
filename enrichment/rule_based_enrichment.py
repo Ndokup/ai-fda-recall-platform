@@ -1088,9 +1088,13 @@ def insert_enrichment_result(
             prompt_version,
             processed_at_utc,
             raw_ai_response
+            classification_source
+            needs_review
+            review_status
+            llm_suggested_category
         )
         VALUES (
-            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb
         )
         ON CONFLICT (recall_number)
         DO UPDATE SET
@@ -1103,7 +1107,11 @@ def insert_enrichment_result(
             model_name = EXCLUDED.model_name,
             prompt_version = EXCLUDED.prompt_version,
             processed_at_utc = EXCLUDED.processed_at_utc,
-            raw_ai_response = EXCLUDED.raw_ai_response;
+            raw_ai_response = EXCLUDED.raw_ai_response,
+            classification_source = EXCLUDED.classification_source,
+            needs_review = EXCLUDED.needs_review,
+            review_status = EXCLUDED.review_status,
+            llm_suggested_category = EXCLUDED.llm_suggested_category;
     """
 
     with connection.cursor() as cursor:
@@ -1152,6 +1160,10 @@ def main() -> None:
 
             category = enrichment["ai_category"]
             category_counts[category] = category_counts.get(category, 0) + 1
+            needs_review = enrichment["ai_category"] == "Other"
+            review_status = "pending" if needs_review else "approved"
+            classification_source = "rule_based"
+            llm_suggested_category = None
 
             print(
                 f"{record['recall_number']} -> "
