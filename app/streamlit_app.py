@@ -601,3 +601,34 @@ st.dataframe(
     use_container_width=True,
     hide_index=True,
 )
+
+st.markdown("---")
+st.markdown("## Hybrid Review Queue")
+
+pending_review_df = run_query("""
+    SELECT
+        recall_number,
+        classification,
+        current_category,
+        current_hazard_type,
+        current_severity,
+        current_confidence,
+        review_status,
+        product_description,
+        reason_for_recall
+    FROM vw_recall_pending_review
+    ORDER BY recall_initiation_date DESC;
+""")
+
+if pending_review_df.empty:
+    st.success("No records currently need hybrid review.")
+else:
+    st.warning(
+        f"{len(pending_review_df):,} rule-based edge cases are pending LLM/manual review."
+    )
+
+    st.dataframe(
+        pending_review_df,
+        use_container_width=True,
+        hide_index=True,
+    )
