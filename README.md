@@ -119,6 +119,26 @@ The enrichment process assigns:
 
 The enrichment output is stored in:
 
+### 5. Hybrid Review Workflow
+
+The project also includes a hybrid classification foundation for handling edge cases that the rule-based classifier cannot confidently categorize.
+
+The current workflow is:
+
+```text
+Rule-based classifier
+    ↓
+Clear match
+    → classification_source = rule_based
+    → needs_review = false
+    → review_status = approved
+
+Unclear / Other match
+    → classification_source = rule_based
+    → needs_review = true
+    → review_status = pending
+    → available for LLM or manual review
+
 ```text
 ai_recall_enrichment
 ```
@@ -191,6 +211,7 @@ vw_recall_state_summary
 vw_recall_monthly_trend
 vw_recall_firm_summary
 vw_recall_state_category_summary
+vw_recall_pending_review
 ```
 
 These views make the dashboard simpler because most of the business logic is handled inside PostgreSQL instead of being repeated inside the Streamlit app.
@@ -213,6 +234,7 @@ Dashboard features include:
 - Recall record explorer
 - Filters by category, severity, and state
 - Search by product, firm, reason, hazard, or recall number
+- Hybrid Review Queue for rule-based edge cases pending LLM/manual review
 
 The dashboard reads from PostgreSQL analytics views instead of performing all calculations directly in the app. This keeps the application cleaner and makes the database layer reusable.
 
@@ -437,6 +459,7 @@ ai-fda-recall-platform/
 - PostgreSQL views are used to keep dashboard logic reusable and easier to maintain.
 - The dashboard is built with Streamlit and reads directly from PostgreSQL analytics views.
 - This project is intended as a practical data engineering and analytics portfolio project with an AI-ready extension path.
+- Records classified as `Other` are automatically marked as pending review and displayed in the Hybrid Review Queue.
 
 ---
 
