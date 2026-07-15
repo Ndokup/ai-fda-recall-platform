@@ -148,3 +148,31 @@ SELECT
 FROM vw_recall_enriched
 WHERE state IS NOT NULL
 GROUP BY state, ai_category;
+
+-- Pending review records for hybrid classification workflow
+CREATE OR REPLACE VIEW vw_recall_pending_review AS
+SELECT
+    r.recall_number,
+    r.classification,
+    r.product_description,
+    r.reason_for_recall,
+    r.recalling_firm,
+    r.state,
+    r.recall_initiation_date,
+    e.ai_category AS current_category,
+    e.hazard_type AS current_hazard_type,
+    e.hazard_name AS current_hazard_name,
+    e.ai_severity AS current_severity,
+    e.ai_confidence AS current_confidence,
+    e.classification_source,
+    e.needs_review,
+    e.review_status,
+    e.llm_suggested_category,
+    e.model_name,
+    e.prompt_version,
+    e.processed_at_utc AS enrichment_processed_at
+FROM vw_recall_enriched r
+INNER JOIN ai_recall_enrichment e
+    ON r.recall_number = e.recall_number
+WHERE e.needs_review = true
+  AND e.review_status = 'pending';
