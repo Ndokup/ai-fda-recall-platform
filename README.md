@@ -452,7 +452,7 @@ ai-fda-recall-platform/
 
 ## Important Notes
 
-- The project uses a 1,000-record FDA food recall sample.
+- The project uses 5000 records FDA food recall sample.
 - The current classifier is rule-based, not a trained machine learning model or live LLM.
 - The enrichment table is designed to support future AI/LLM-based enrichment.
 - The raw FDA records and enriched intelligence are stored separately.
