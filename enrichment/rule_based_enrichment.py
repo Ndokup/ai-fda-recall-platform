@@ -18,11 +18,11 @@ from psycopg2.extras import RealDictCursor
 
 PROMPT_VERSION = "rule_based_v1"
 MODEL_NAME = "rule_based_classifier_v1"
-BATCH_SIZE = 1000
+BATCH_SIZE = 5000
 
 # When True, the script only previews classifications.
 # It will NOT insert or update rows in ai_recall_enrichment.
-DRY_RUN = True
+DRY_RUN = False
 
 def get_database_connection() -> psycopg2.extensions.connection:
     """PostgreSQL connection using environment variables."""
@@ -1075,6 +1075,11 @@ def insert_enrichment_result(
 
     raw_ai_response = json.dumps(enrichment)
 
+    needs_review = enrichment["ai_category"] == "Other"
+    review_status = "pending" if needs_review else "approved"
+    classification_source = "rule_based"
+    llm_suggested_category = None
+
     query = """
         INSERT INTO ai_recall_enrichment (
             recall_number,
@@ -1087,14 +1092,16 @@ def insert_enrichment_result(
             model_name,
             prompt_version,
             processed_at_utc,
-            raw_ai_response
-            classification_source
-            needs_review
-            review_status
+            raw_ai_response,
+            classification_source,
+            needs_review,
+            review_status,
             llm_suggested_category
         )
         VALUES (
-            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb
+            %s, %s, %s, %s, %s,
+            %s, %s, %s, %s, %s,
+            %s::jsonb, %s, %s, %s, %s
         )
         ON CONFLICT (recall_number)
         DO UPDATE SET
@@ -1129,6 +1136,10 @@ def insert_enrichment_result(
                 PROMPT_VERSION,
                 datetime.utcnow(),
                 raw_ai_response,
+                classification_source,
+                needs_review,
+                review_status,
+                llm_suggested_category,
             ),
         )
 
