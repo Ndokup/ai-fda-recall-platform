@@ -185,6 +185,13 @@ kpi_df = run_query(
     """
 )
 
+pending_review_count_df = run_query("""
+    SELECT COUNT(*) AS pending_review_count
+    FROM vw_recall_pending_review;
+""")
+
+pending_review_count = int(pending_review_count_df.iloc[0]["pending_review_count"])
+
 if kpi_df.empty:
     st.error("No KPI data found. Please check vw_recall_kpi_summary.")
     st.stop()
@@ -270,9 +277,9 @@ with col5:
         f"""
         <a href="#explorer-section" class="kpi-link">
             <div class="kpi-card">
-                <div class="kpi-label">Other Recalls</div>
-                <div class="kpi-value">{int(kpi['other_recalls']):,}</div>
-                <div class="kpi-note">Edge cases</div>
+                <div class="kpi-label">Pending Review</div>
+                <div class="kpi-value">{pending_review_count:,}</div>
+                <div class="kpi-note">Rule-based edge cases</div>
             </div>
         </a>
         """,
@@ -601,7 +608,7 @@ st.dataframe(
     use_container_width=True,
     hide_index=True,
 )
-
+st.markdown('<div id="hybrid-review-section"></div>', unsafe_allow_html=True)
 st.markdown("---")
 st.markdown("## Hybrid Review Queue")
 
