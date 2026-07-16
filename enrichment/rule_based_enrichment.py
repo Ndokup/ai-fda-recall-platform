@@ -94,6 +94,14 @@ def classify_recall(
         "pistachio": "Tree nut",
         "whey": "Milk",
         "whey protein": "Milk",
+        "pollock": "Fish",
+        "tilapia": "Fish",
+        "tuna": "Fish",
+        "shrimp": "Shellfish",
+        "crab": "Shellfish",
+        "imitation crab": "Shellfish",
+        "whey protein concentrate": "Milk",
+        "major food allergens": "Allergen",
     }
 
     pathogen_keywords = {
@@ -118,6 +126,8 @@ def classify_recall(
         "giardia": "Giardia",
         "staphylococcus enterotoxin": "Staphylococcus enterotoxin",
         "coliform": "Coliform",
+        "b. cepacia": "Burkholderia cepacia",
+        "salmonellosis": "Salmonella",
     }
 
     foreign_material_keywords = {
@@ -129,6 +139,16 @@ def classify_recall(
         "foreign object": "Foreign object",
         "foreign objects": "Foreign objects",
         "foreign material": "Foreign material",
+        "potential for metal": "Metal",
+        "metal in product": "Metal",
+        "white plastic": "Plastic",
+        "hard clear plastic": "Plastic",
+        "hard plastic": "Plastic",
+        "small pieces of hard plastic": "Plastic",
+        "cotton fibers": "Cotton fibers",
+        "human fingertip": "Human tissue",
+        "nozzle cap": "Bottle cap",
+        "cap can become dislodged": "Bottle cap",
     }
 
     chemical_keywords = {
@@ -156,6 +176,8 @@ def classify_recall(
         "cyclamates": "Cyclamates",
         "cyclamate": "Cyclamates",
         "sanitizer": "Sanitizer",
+        "patulin": "Patulin",
+        "apple juice concentrate": "Patulin",
         "yellow oleander": "Yellow oleander",
         "muscimol": "Muscimol",
         "haloxyfop": "Haloxyfop",
@@ -223,6 +245,12 @@ def classify_recall(
         or "contains 28.1 ppm sulfites" in combined_text
         or "contains undeclared allergens" in combined_text
         or "contain undeclared allergens" in combined_text
+        or "contains statement does not declare" in combined_text
+        or "does not declare" in combined_text
+        or "contains statement declared" in combined_text
+        or "label does not indicate" in combined_text
+        or "no labels indicating the ingredients" in combined_text
+        or "no labels indicating the ingredients or the major food allergens" in combined_text
     ):
         allergens_found = [
             display_name
@@ -253,6 +281,138 @@ def classify_recall(
                 severity = "Critical" if classification == "Class I" else "High"
                 confidence = 0.95
                 break
+        # Missed foreign material patterns found during 5,000-record review
+    if category == "Other" and (
+        "potential for metal" in reason_text
+        or "metal in product" in reason_text
+        or "white plastic" in reason_text
+        or "hard clear plastic" in reason_text
+        or "hard plastic" in reason_text
+        or "small pieces of hard plastic" in reason_text
+        or "cotton fibers" in reason_text
+        or "human fingertip" in reason_text
+        or "nozzle cap" in reason_text
+        or "cap can become dislodged" in reason_text
+        or "possibly ingested" in reason_text
+    ):
+        category = "Foreign material contamination"
+        hazard_type = "Foreign Material"
+
+        foreign_hazards = []
+
+        if "metal" in reason_text:
+            foreign_hazards.append("Metal")
+        if "plastic" in reason_text:
+            foreign_hazards.append("Plastic")
+        if "cotton fibers" in reason_text:
+            foreign_hazards.append("Cotton fibers")
+        if "human fingertip" in reason_text:
+            foreign_hazards.append("Human tissue")
+        if "nozzle cap" in reason_text or "cap can become dislodged" in reason_text:
+            foreign_hazards.append("Bottle cap")
+
+        hazard_name = " / ".join(foreign_hazards) if foreign_hazards else "Foreign material"
+        severity = "High"
+        confidence = 0.90
+
+    # Missed temperature/storage patterns found during 5,000-record review
+    if category == "Other" and (
+        "temperature abuse" in reason_text
+        or "temperature excursion" in reason_text
+        or "shipping trailer" in reason_text
+        or "improper temperature" in reason_text
+        or "temperature deviation" in reason_text
+    ):
+        category = "Temperature or storage issue"
+        hazard_type = "Temperature"
+
+        temperature_hazards = []
+
+        if "temperature abuse" in reason_text:
+            temperature_hazards.append("Temperature abuse")
+        if "temperature excursion" in reason_text:
+            temperature_hazards.append("Temperature excursion")
+        if "shipping trailer" in reason_text:
+            temperature_hazards.append("Shipping temperature issue")
+        if "improper temperature" in reason_text:
+            temperature_hazards.append("Improper temperature")
+        if "temperature deviation" in reason_text:
+            temperature_hazards.append("Temperature deviation")
+
+        hazard_name = " / ".join(temperature_hazards) if temperature_hazards else "Temperature control issue"
+        severity = "Medium"
+        confidence = 0.90
+
+    # Missed quality/manufacturing patterns found during 5,000-record review
+    if category == "Other" and (
+        "not adequately pasteurized" in reason_text
+        or "unpasteurized juice" in reason_text
+        or "juice haccp" in reason_text
+        or "low water phase salt" in reason_text
+        or "package integrity compromised" in reason_text
+        or "product does not meet label claim" in reason_text
+        or "vitamin e" in reason_text
+        or "product spoilage" in reason_text
+        or "indication of product spoilage" in reason_text
+        or "bloated and swollen" in reason_text
+        or "holding tank in excess of 72 hours" in reason_text
+        or "tank cleaning interval" in reason_text
+        or "food product residue" in reason_text
+        or "adulteration from food product residue" in reason_text
+    ):
+        category = "Quality or manufacturing issue"
+        hazard_type = "Quality"
+
+        quality_hazards = []
+
+        if "pasteurized" in reason_text or "unpasteurized" in reason_text:
+            quality_hazards.append("Pasteurization issue")
+        if "juice haccp" in reason_text:
+            quality_hazards.append("Juice HACCP violation")
+        if "low water phase salt" in reason_text:
+            quality_hazards.append("Low water phase salt")
+        if "package integrity compromised" in reason_text:
+            quality_hazards.append("Package integrity issue")
+        if "label claim" in reason_text or "vitamin e" in reason_text:
+            quality_hazards.append("Label claim failure")
+        if "spoilage" in reason_text or "bloated and swollen" in reason_text:
+            quality_hazards.append("Spoilage")
+        if "holding tank in excess of 72 hours" in reason_text or "tank cleaning interval" in reason_text:
+            quality_hazards.append("Process control issue")
+        if "food product residue" in reason_text:
+            quality_hazards.append("Food product residue")
+
+        hazard_name = " / ".join(quality_hazards) if quality_hazards else "Quality issue"
+        severity = "High" if "pasteurized" in reason_text or "unpasteurized" in reason_text else "Medium"
+        confidence = 0.88
+
+    # Missed chemical patterns found during 5,000-record review
+    if category == "Other" and (
+        "patulin" in reason_text
+        or "apple juice concentrate" in reason_text
+    ):
+        category = "Chemical contamination"
+        hazard_type = "Chemical"
+        hazard_name = "Patulin"
+        severity = "High"
+        confidence = 0.90
+
+    # Missed labeling patterns found during 5,000-record review
+    if category == "Other" and (
+        "no labels" in reason_text
+        or "no label" in reason_text
+        or "no listing of ingredients" in reason_text
+        or "does not contain a listing of ingredients" in reason_text
+        or "product labeling does not contain" in reason_text
+        or "label claim" in reason_text
+        or "ingredients statement" in reason_text
+        or "contains statement" in reason_text
+    ):
+        category = "Mislabeling or packaging error"
+        hazard_type = "Labeling"
+        hazard_name = "Missing or incorrect label declaration"
+        severity = "Medium"
+        confidence = 0.85
 
     if category == "Other" and (
         "nutrition facts" in reason_text
