@@ -239,16 +239,15 @@ Dashboard features include:
 The dashboard reads from PostgreSQL analytics views instead of performing all calculations directly in the app. This keeps the application cleaner and makes the database layer reusable.
 
 ---
-
 ## Final Dataset Summary
 
-The project enriched 1,000 FDA food recall records.
+The project currently processes and enriches 5,000 FDA food recall records.
 
 ### Enrichment Coverage
 
 ```text
-Total records: 1000
-Enriched records: 1000
+Total records: 5000
+Enriched records: 5000
 Not enriched records: 0
 Coverage: 100%
 ```
@@ -256,41 +255,42 @@ Coverage: 100%
 ### Final Category Distribution
 
 ```text
-Pathogen contamination:             423
-Undeclared allergen:                303
-Quality or manufacturing issue:      70
-Foreign material contamination:      69
-Chemical contamination:              61
-Mislabeling or packaging error:      41
-Temperature or storage issue:        30
-Other:                                2
+Pathogen contamination:            2050
+Undeclared allergen:               1404
+Other:                              471
+Foreign material contamination:     332
+Chemical contamination:             245
+Quality or manufacturing issue:     241
+Mislabeling or packaging error:     133
+Temperature or storage issue:       123
 Product mix-up:                       1
 ```
 
-### Final Severity Distribution
+### Hybrid Review Status
 
 ```text
-Critical: 334
-High:     494
-Medium:   172
+Rule-based approved records: 4529
+Pending review records:       471
 ```
+
+Records in the `Other` category are automatically marked as pending review and displayed in the dashboard's Hybrid Review Queue.
 
 ### Key Insight
 
-828 out of 1,000 recalls were classified as High or Critical risk.
+4,529 out of 5,000 recalls were classified into specific rule-based categories.
 
-That means 82.8% of recall records in this sample were high-risk or critical based on the rule-based enrichment logic.
+That means 90.58% of recall records in this dataset were handled directly by the rule-based classification engine, while 9.42% were flagged as edge cases for future LLM/manual review.
 
 ---
 
 ## Key Findings
 
-- Pathogen contamination was the largest recall category in this 1,000-record sample.
+- Pathogen contamination was the largest recall category in the 5,000-record dataset.
 - Undeclared allergens were the second-largest recall category.
-- Listeria and Salmonella were the most common hazards.
-- Milk and peanut were among the most common allergen hazards.
-- California had the highest number of recall records in the 1,000-record sample.
-- Only 2 records remained in the Other category after enrichment.
+- The hybrid review workflow identified 471 edge cases that need LLM/manual review.
+- The rule-based classifier successfully categorized 4,529 records into specific hazard categories.
+- The `Other` category is now used as an operational review queue instead of being treated as a final classification.
+- The 5,000-record scale-up confirmed that the hybrid review design is useful for handling unclear recall reasons.
 
 ---
 
