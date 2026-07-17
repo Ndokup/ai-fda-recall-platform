@@ -277,7 +277,7 @@ Records in the `Other` category are automatically marked as pending review and d
 
 ### Key Insight
 
-4,529 out of 5,000 recalls were classified into specific rule-based categories.
+4,728 out of 5,000 recalls were classified into specific rule-based categories.
 
 That means 94.56% of recall records in this dataset were handled directly by the rule-based classification engine, while 5.44% were flagged as edge cases for future LLM/manual review.
 
@@ -287,8 +287,8 @@ That means 94.56% of recall records in this dataset were handled directly by the
 
 - Pathogen contamination was the largest recall category in the 5,000-record dataset.
 - Undeclared allergens were the second-largest recall category.
-- The hybrid review workflow identified 471 edge cases that need LLM/manual review.
-- The rule-based classifier successfully categorized 4,529 records into specific hazard categories.
+- The hybrid review workflow identified 272 edge cases that need LLM/manual review.
+- The rule-based classifier successfully categorized 4,728 records into specific hazard categories.
 - The `Other` category is now used as an operational review queue instead of being treated as a final classification.
 - The 5,000-record scale-up confirmed that the hybrid review design is useful for handling unclear recall reasons.
 
