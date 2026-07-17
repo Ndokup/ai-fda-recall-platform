@@ -343,6 +343,160 @@ def classify_recall(
         severity = "Medium"
         confidence = 0.90
 
+        # Second-wave allergen patterns found after 5,000-record pending review analysis
+    if category == "Other" and (
+        "trace amounts of peanut allergens" in reason_text
+        or "potential peanut contamination" in reason_text
+        or "peanut contamination" in reason_text
+        or "proper ingredients and allergens" in reason_text
+        or "allergens (wheat)" in reason_text
+        or "label does not identify whey protein concentrate" in reason_text
+        or "whey protein concentrate" in reason_text and "milk" in reason_text
+        or "milk ingredients supplied" in reason_text
+    ):
+        category = "Undeclared allergen"
+        hazard_type = "Allergen"
+
+        allergen_hazards = []
+
+        if "peanut" in reason_text:
+            allergen_hazards.append("Peanut")
+        if "wheat" in reason_text:
+            allergen_hazards.append("Wheat")
+        if "whey" in reason_text or "milk" in reason_text:
+            allergen_hazards.append("Milk")
+
+        hazard_name = " / ".join(sorted(set(allergen_hazards))) if allergen_hazards else "Unknown allergen"
+        severity = "High"
+        confidence = 0.90
+
+    # Second-wave foreign material patterns found after 5,000-record pending review analysis
+    if category == "Other" and (
+        "foreign matter" in reason_text
+        or "blue fiber" in reason_text
+        or "plastic polymer" in reason_text
+        or "small metal piece" in reason_text
+        or "piece of rubber" in reason_text
+        or "rubber inside" in reason_text
+    ):
+        category = "Foreign material contamination"
+        hazard_type = "Foreign Material"
+
+        foreign_hazards = []
+
+        if "fiber" in reason_text:
+            foreign_hazards.append("Fiber")
+        if "plastic" in reason_text or "polymer" in reason_text:
+            foreign_hazards.append("Plastic")
+        if "metal" in reason_text:
+            foreign_hazards.append("Metal")
+        if "rubber" in reason_text:
+            foreign_hazards.append("Rubber")
+
+        hazard_name = " / ".join(foreign_hazards) if foreign_hazards else "Foreign material"
+        severity = "High"
+        confidence = 0.90
+
+    # Second-wave chemical / toxin patterns found after 5,000-record pending review analysis
+    if category == "Other" and (
+        "erucic acid" in reason_text
+        or "histamine" in reason_text
+        or "hcg" in reason_text
+    ):
+        category = "Chemical contamination"
+        hazard_type = "Chemical"
+
+        chemical_hazards = []
+
+        if "erucic acid" in reason_text:
+            chemical_hazards.append("Erucic acid")
+        if "histamine" in reason_text:
+            chemical_hazards.append("Histamine")
+        if "hcg" in reason_text:
+            chemical_hazards.append("HCG")
+
+        hazard_name = " / ".join(chemical_hazards)
+        severity = "High" if "histamine" in reason_text or "hcg" in reason_text else "Medium"
+        confidence = 0.90
+
+    # Second-wave quality/manufacturing patterns found after 5,000-record pending review analysis
+    if category == "Other" and (
+        "insect filth" in reason_text
+        or "beetles" in reason_text
+        or "spoilage" in reason_text
+        or "swollen cans" in reason_text
+        or "swollen" in reason_text
+        or "contain yeast" in reason_text
+        or "potential presence of mold" in reason_text
+        or "contaminated with mold" in reason_text
+        or "may be contaminated with mold" in reason_text
+        or "under pasteurized" in reason_text
+        or "under-pasteurized" in reason_text
+        or "potentially under pasteurized" in reason_text
+        or "broken seal on the pasteurizer" in reason_text
+        or "damage to the lip of the bottle" in reason_text
+    ):
+        category = "Quality or manufacturing issue"
+        hazard_type = "Quality"
+
+        quality_hazards = []
+
+        if "insect" in reason_text or "beetles" in reason_text:
+            quality_hazards.append("Insect contamination / filth")
+        if "spoilage" in reason_text or "swollen" in reason_text:
+            quality_hazards.append("Spoilage / swelling")
+        if "yeast" in reason_text:
+            quality_hazards.append("Yeast")
+        if "mold" in reason_text:
+            quality_hazards.append("Mold")
+        if "pasteurized" in reason_text or "pasteurizer" in reason_text:
+            quality_hazards.append("Pasteurization issue")
+        if "lip of the bottle" in reason_text:
+            quality_hazards.append("Bottle damage")
+
+        hazard_name = " / ".join(quality_hazards) if quality_hazards else "Quality issue"
+        severity = "High" if "pasteurized" in reason_text or "pasteurizer" in reason_text else "Medium"
+        confidence = 0.88
+
+    # Second-wave temperature / refrigeration patterns found after 5,000-record pending review analysis
+    if category == "Other" and (
+        "may not be refrigerated" in reason_text
+        or "refrigeration requirements" in reason_text
+        or "customer level" in reason_text and "refrigerated" in reason_text
+    ):
+        category = "Temperature or storage issue"
+        hazard_type = "Temperature"
+        hazard_name = "Refrigeration requirement issue"
+        severity = "Medium"
+        confidence = 0.85
+
+    # Second-wave labeling patterns found after 5,000-record pending review analysis
+    if category == "Other" and (
+        "lack of phenylketonuric warning" in reason_text
+        or "phenylketonuric warning" in reason_text
+        or "aspartame" in reason_text
+        or "labeled gluten free" in reason_text
+        or "labeled gluten-free" in reason_text
+        or "contain gluten in excess of 20 ppm" in reason_text
+        or "gluten in excess of 20 ppm" in reason_text
+        or "misbranding" in reason_text
+    ):
+        category = "Mislabeling or packaging error"
+        hazard_type = "Labeling"
+
+        labeling_hazards = []
+
+        if "phenylketonuric" in reason_text or "aspartame" in reason_text:
+            labeling_hazards.append("Missing phenylketonuric/aspartame warning")
+        if "gluten" in reason_text:
+            labeling_hazards.append("Gluten-free claim issue")
+        if "misbranding" in reason_text:
+            labeling_hazards.append("Misbranding")
+
+        hazard_name = " / ".join(labeling_hazards) if labeling_hazards else "Labeling issue"
+        severity = "Medium"
+        confidence = 0.85
+
     # Missed quality/manufacturing patterns found during 5,000-record review
     if category == "Other" and (
         "not adequately pasteurized" in reason_text
