@@ -255,22 +255,22 @@ Coverage: 100%
 ### Final Category Distribution
 
 ```text
-Pathogen contamination:            2050
-Undeclared allergen:               1404
-Other:                              471
-Foreign material contamination:     332
-Chemical contamination:             245
-Quality or manufacturing issue:     241
-Mislabeling or packaging error:     133
-Temperature or storage issue:       123
-Product mix-up:                       1
+Pathogen contamination:             2059
+Undeclared allergen:                1452
+Foreign material contamination:      370
+Quality or manufacturing issue:      334
+Other / Pending review:              272
+Chemical contamination:              250
+Mislabeling or packaging error:      161
+Temperature or storage issue:        101
+Product mix-up:                        1
 ```
 
 ### Hybrid Review Status
 
 ```text
-Rule-based approved records: 4529
-Pending review records:       471
+Rule-based approved records: 4728
+Pending review records: 272
 ```
 
 Records in the `Other` category are automatically marked as pending review and displayed in the dashboard's Hybrid Review Queue.
@@ -279,7 +279,7 @@ Records in the `Other` category are automatically marked as pending review and d
 
 4,529 out of 5,000 recalls were classified into specific rule-based categories.
 
-That means 90.58% of recall records in this dataset were handled directly by the rule-based classification engine, while 9.42% were flagged as edge cases for future LLM/manual review.
+That means 94.56% of recall records in this dataset were handled directly by the rule-based classification engine, while 5.44% were flagged as edge cases for future LLM/manual review.
 
 ---
 
