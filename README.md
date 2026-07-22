@@ -144,6 +144,12 @@ Unclear / Other match
 
 A detailed explanation of the remaining pending review records is available in [Pending Review Analysis](docs/pending_review_analysis.md).
 
+The project also includes an LLM enrichment preview script that exports pending review records into a JSONL file for future LLM or batch-processing workflows.
+
+```text
+data/processed/pending_review_llm_payloads.jsonl
+
+
 The enrichment output is stored in:
 
 ```text
@@ -474,7 +480,7 @@ ai-fda-recall-platform/
 
 Possible next improvements:
 
-- Add OpenAI or another LLM-based enrichment process for ambiguous recall reasons
+- Connect the existing LLM-ready JSONL export to OpenAI or another LLM-based enrichment process for ambiguous recall reasons
 - Add embeddings and semantic search
 - Add RAG-based recall question answering
 - Add automated scheduled FDA API ingestion
