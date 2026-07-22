@@ -148,7 +148,7 @@ The project also includes an LLM enrichment preview script that exports pending 
 
 ```text
 data/processed/pending_review_llm_payloads.jsonl
-
+```
 
 The enrichment output is stored in:
 
