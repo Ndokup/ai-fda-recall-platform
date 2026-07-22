@@ -10,6 +10,7 @@ from psycopg2.extras import RealDictCursor
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 ENV_PATH = PROJECT_ROOT / ".env"
 PROMPT_PATH = PROJECT_ROOT / "prompts" / "recall_enrichment_prompt.md"
+OUTPUT_PATH = PROJECT_ROOT / "data" / "processed" / "pending_review_llm_payloads.jsonl"
 
 load_dotenv(ENV_PATH)
 
@@ -83,6 +84,21 @@ def build_llm_payload(record):
     }
 
 
+def export_payloads_to_jsonl(records, output_path):
+    """
+    Export LLM-ready payloads to a JSONL file.
+
+    JSONL means each line is one valid JSON object.
+    This format is useful for batch processing and future LLM workflows.
+    """
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(output_path, "w", encoding="utf-8") as output_file:
+        for record in records:
+            payload = build_llm_payload(record)
+            output_file.write(json.dumps(payload, ensure_ascii=False) + "\n")
+
+
 def main():
     print("LLM enrichment preview started.")
     print("This script does not call an LLM yet.")
@@ -99,6 +115,11 @@ def main():
     if not records:
         print("No records currently need LLM review.")
         return
+
+    export_payloads_to_jsonl(records, OUTPUT_PATH)
+
+    print(f"LLM-ready payloads exported to: {OUTPUT_PATH}")
+    print()
 
     for index, record in enumerate(records, start=1):
         payload = build_llm_payload(record)
