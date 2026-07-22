@@ -150,6 +150,20 @@ The project also includes an LLM enrichment preview script that exports pending 
 data/processed/pending_review_llm_payloads.jsonl
 ```
 
+The LLM enrichment preview script supports both small preview exports and full pending-review exports.
+
+Preview 10 pending review records:
+
+```powershell
+python enrichment/llm_enrichment.py --limit 10
+```
+
+Export all pending review records:
+
+```powershell
+python enrichment/llm_enrichment.py --all
+```
+
 The enrichment output is stored in:
 
 ```text
