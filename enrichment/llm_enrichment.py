@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 from pathlib import Path
@@ -36,16 +37,13 @@ def load_prompt_template():
         return prompt_file.read()
 
 
-def fetch_records_needing_review(limit=10):
+def fetch_records_needing_review(limit=None):
     """
     Fetch recall records that were marked for LLM/manual review.
 
-    These are usually records where the rule-based classifier returned:
-    - ai_category = 'Other'
-    - needs_review = true
-    - review_status = 'pending'
+    If limit is None, fetch all pending review records.
     """
-    query = """
+    base_query = """
         SELECT
             recalls.recall_number,
             recalls.classification,
@@ -63,12 +61,22 @@ def fetch_records_needing_review(limit=10):
         WHERE enrichment.needs_review = true
           AND enrichment.review_status = 'pending'
         ORDER BY recalls.recall_initiation_date DESC
-        LIMIT %s;
     """
+
+    if limit is not None:
+        query = base_query + " LIMIT %s;"
+        query_params = (limit,)
+    else:
+        query = base_query + ";"
+        query_params = None
 
     with get_database_connection() as connection:
         with connection.cursor(cursor_factory=RealDictCursor) as cursor:
-            cursor.execute(query, (limit,))
+            if query_params:
+                cursor.execute(query, query_params)
+            else:
+                cursor.execute(query)
+
             return cursor.fetchall()
 
 
@@ -99,28 +107,10 @@ def export_payloads_to_jsonl(records, output_path):
             output_file.write(json.dumps(payload, ensure_ascii=False) + "\n")
 
 
-def main():
-    print("LLM enrichment preview started.")
-    print("This script does not call an LLM yet.")
-    print()
-
-    prompt_template = load_prompt_template()
-    records = fetch_records_needing_review(limit=10)
-
-    print(f"Prompt template loaded from: {PROMPT_PATH}")
-    print(f"Prompt length: {len(prompt_template)} characters")
-    print(f"Records needing review found: {len(records)}")
-    print()
-
-    if not records:
-        print("No records currently need LLM review.")
-        return
-
-    export_payloads_to_jsonl(records, OUTPUT_PATH)
-
-    print(f"LLM-ready payloads exported to: {OUTPUT_PATH}")
-    print()
-
+def print_record_preview(records):
+    """
+    Print the selected pending review records in a readable preview format.
+    """
     for index, record in enumerate(records, start=1):
         payload = build_llm_payload(record)
 
@@ -150,8 +140,71 @@ def main():
         print(json.dumps(payload, indent=2))
         print()
 
+
+def parse_arguments():
+    """
+    Parse command-line options.
+
+    Examples:
+    python enrichment/llm_enrichment.py --limit 10
+    python enrichment/llm_enrichment.py --limit 272
+    python enrichment/llm_enrichment.py --all
+    """
+    parser = argparse.ArgumentParser(
+        description="Preview and export pending review records for future LLM enrichment."
+    )
+
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=10,
+        help="Number of pending review records to export. Default is 10.",
+    )
+
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Export all pending review records.",
+    )
+
+    return parser.parse_args()
+
+
+def main():
+    args = parse_arguments()
+
+    print("LLM enrichment preview/export started.")
+    print("This script does not call an LLM yet.")
+    print()
+
+    prompt_template = load_prompt_template()
+
+    if args.all:
+        records = fetch_records_needing_review(limit=None)
+        export_mode = "all pending review records"
+    else:
+        records = fetch_records_needing_review(limit=args.limit)
+        export_mode = f"first {args.limit} pending review records"
+
+    print(f"Prompt template loaded from: {PROMPT_PATH}")
+    print(f"Prompt length: {len(prompt_template)} characters")
+    print(f"Export mode: {export_mode}")
+    print(f"Records needing review exported: {len(records)}")
+    print()
+
+    if not records:
+        print("No records currently need LLM review.")
+        return
+
+    export_payloads_to_jsonl(records, OUTPUT_PATH)
+
+    print(f"LLM-ready payloads exported to: {OUTPUT_PATH}")
+    print()
+
+    print_record_preview(records)
+
     print("=" * 80)
-    print("Preview complete.")
+    print("Preview/export complete.")
     print("Next phase will send these payloads to an LLM and store the response.")
 
 
