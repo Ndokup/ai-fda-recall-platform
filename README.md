@@ -121,8 +121,9 @@ The enrichment output is stored in:
 
 ### 5. Hybrid Review Workflow
 
-The project also includes a hybrid classification foundation for handling edge cases that the rule-based classifier cannot confidently categorize.
+## Hybrid Review Workflow
 
+The project also includes a hybrid classification foundation for handling edge cases that the rule-based classifier cannot confidently categorize.
 
 The current workflow is:
 
@@ -138,8 +139,12 @@ Unclear / Other match
     → classification_source = rule_based
     → needs_review = true
     → review_status = pending
-    A detailed explanation of the remaining pending review records is available in [Pending Review Analysis](docs/pending_review_analysis.md).
     → available for LLM or manual review
+```
+
+A detailed explanation of the remaining pending review records is available in [Pending Review Analysis](docs/pending_review_analysis.md).
+
+The enrichment output is stored in:
 
 ```text
 ai_recall_enrichment
